@@ -1,0 +1,42 @@
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 空状态小狗 - 有点疑惑 -->
+  <g id="empty-dog">
+    <!-- 头部 -->
+    <ellipse cx="80" cy="70" rx="35" ry="38" stroke="#FF6B9D" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+    <!-- 左耳 -->
+    <path d="M 50 48 Q 38 35 32 48 Q 30 58 42 62" stroke="#FF6B9D" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+    <!-- 右耳 -->
+    <path d="M 110 48 Q 122 35 128 48 Q 130 58 118 62" stroke="#FF6B9D" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+    <!-- 左眼（疑惑的表情） -->
+    <circle cx="65" cy="65" r="3.5" fill="#2C3E50"/>
+    <circle cx="66.5" cy="64" r="1.2" fill="#FFFFFF"/>
+
+    <!-- 右眼 -->
+    <circle cx="95" cy="65" r="3.5" fill="#2C3E50"/>
+    <circle cx="96.5" cy="64" r="1.2" fill="#FFFFFF"/>
+
+    <!-- 问号眉毛 -->
+    <path d="M 58 55 Q 62 52 66 55" stroke="#FF6B9D" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- 鼻子 -->
+    <ellipse cx="80" cy="80" rx="5" ry="4" fill="#2C3E50"/>
+
+    <!-- 疑惑的嘴巴 -->
+    <path d="M 70 92 Q 75 88 80 88 Q 85 88 90 92" stroke="#FF6B9D" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 身体 -->
+    <ellipse cx="80" cy="120" rx="28" ry="24" stroke="#FF6B9D" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+    <!-- 尾巴（下垂） -->
+    <path d="M 108 115 Q 120 118 125 125 Q 128 130 125 135" stroke="#FF6B9D" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+    <!-- 问号装饰 -->
+    <g opacity="0.5">
+      <path d="M 125 35 Q 125 30 128 28 Q 131 26 134 28 Q 137 30 137 35 Q 137 38 134 40 L 131 43" stroke="#FFB6C1" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="131" cy="48" r="2" fill="#FFB6C1"/>
+    </g>
+  </g>
+</svg>

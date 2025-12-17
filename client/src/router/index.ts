@@ -1,33 +1,62 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
+// 直接导入组件（不使用懒加载）
+import Login from '../views/user/Login.vue';
+import Register from '../views/user/Register.vue';
+import Layout from '../views/user/Layout.vue';
+import Dashboard from '../views/user/Dashboard.vue';
+import Calendar from '../views/user/Calendar.vue';
+import Profile from '../views/user/Profile.vue';
+import ScheduleDetail from '../views/user/ScheduleDetail.vue';
+import SharedView from '../views/user/SharedView.vue';
+import AdminLayout from '../views/admin/AdminLayout.vue';
+import UserManagement from '../views/admin/UserManagement.vue';
+import PermissionManagement from '../views/admin/PermissionManagement.vue';
+import Statistics from '../views/admin/Statistics.vue';
+import SystemConfig from '../views/admin/SystemConfig.vue';
+
 // 路由配置
-const routes: RouteRecordRaw[] = [
+const routes = [
   {
     path: '/',
-    redirect: '/user/dashboard',
+    redirect: '/login',
+  },
+  // 登录页面
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { title: '登录' },
+  },
+  // 注册页面
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
+    meta: { title: '注册' },
   },
   // C端用户页面（移动端）
   {
     path: '/user',
-    component: () => import('../views/user/Layout.vue'),
+    component: Layout,
     children: [
       {
         path: 'dashboard',
         name: 'Dashboard',
-        component: () => import('../views/user/Dashboard.vue'),
+        component: Dashboard,
         meta: { title: '首页', requiresAuth: true },
       },
       {
         path: 'calendar',
         name: 'Calendar',
-        component: () => import('../views/user/Calendar.vue'),
+        component: Calendar,
         meta: { title: '日历', requiresAuth: true },
       },
       {
         path: 'profile',
         name: 'Profile',
-        component: () => import('../views/user/Profile.vue'),
+        component: Profile,
         meta: { title: '个人中心', requiresAuth: true },
       },
     ],
@@ -36,33 +65,20 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/schedule/:id',
     name: 'ScheduleDetail',
-    component: () => import('../views/user/ScheduleDetail.vue'),
+    component: ScheduleDetail,
     meta: { title: '日程详情', requiresAuth: true },
   },
   // 分享页面（无需登录）
   {
     path: '/shared/:id',
     name: 'SharedSchedule',
-    component: () => import('../views/user/SharedView.vue'),
+    component: SharedView,
     meta: { title: '分享的日程' },
   },
-  // 登录注册
-  {
-    path: '/login',
-    name: 'Login',
-    component: () => import('../views/user/Login.vue'),
-    meta: { title: '登录' },
-  },
-  {
-    path: '/register',
-    name: 'Register',
-    component: () => import('../views/user/Register.vue'),
-    meta: { title: '注册' },
-  },
-  // B端管理后台（桌面端）
+  // 管理后台
   {
     path: '/admin',
-    component: () => import('../views/admin/AdminLayout.vue'),
+    component: AdminLayout,
     meta: { requiresAuth: true, requiresAdmin: true },
     children: [
       {
@@ -72,37 +88,30 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'users',
         name: 'AdminUsers',
-        component: () => import('../views/admin/UserManagement.vue'),
+        component: UserManagement,
         meta: { title: '用户管理' },
       },
       {
         path: 'permissions',
         name: 'AdminPermissions',
-        component: () => import('../views/admin/PermissionManagement.vue'),
+        component: PermissionManagement,
         meta: { title: '权限管理' },
       },
       {
         path: 'statistics',
         name: 'AdminStatistics',
-        component: () => import('../views/admin/Statistics.vue'),
+        component: Statistics,
         meta: { title: '数据统计' },
       },
       {
         path: 'config',
         name: 'AdminConfig',
-        component: () => import('../views/admin/SystemConfig.vue'),
+        component: SystemConfig,
         meta: { title: '系统配置' },
       },
     ],
   },
-  // 404页面
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: () => import('../views/NotFound.vue'),
-    meta: { title: '页面不存在' },
-  },
-];
+]
 
 // 创建路由实例
 const router = createRouter({
@@ -130,13 +139,13 @@ router.beforeEach((to, from, next) => {
 
   // 检查是否需要管理员权限
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
-    next('/user/dashboard');
+    next('/login');
     return;
   }
 
-  // 如果已登录且访问登录页，重定向到首页
-  if (authStore.isAuthenticated && (to.path === '/login' || to.path === '/register')) {
-    next('/user/dashboard');
+  // 如果已登录且访问登录页，重定向到管理后台
+  if (authStore.isAuthenticated && authStore.isAdmin && to.path === '/login') {
+    next('/admin');
     return;
   }
 

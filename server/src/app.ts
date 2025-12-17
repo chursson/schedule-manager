@@ -8,6 +8,8 @@ import { SocketService } from './services/socketService';
 // 导入路由
 import authRoutes from './routes/auth';
 import scheduleRoutes from './routes/schedule';
+import wechatRoutes from './routes/wechat';
+import adminRoutes from './routes/admin';
 
 // 加载环境变量
 dotenv.config();
@@ -25,7 +27,13 @@ const socketService = new SocketService(httpServer);
 // 中间件
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: process.env.NODE_ENV === 'production'
+      ? [process.env.CLIENT_URL || '*']
+      : [
+          'http://localhost:5173',
+          'http://30.138.104.69:5173',
+          process.env.CLIENT_URL || 'http://localhost:5173'
+        ],
     credentials: true,
   })
 );
@@ -41,6 +49,8 @@ app.use((req, res, next) => {
 // 路由
 app.use('/api/auth', authRoutes);
 app.use('/api/schedules', scheduleRoutes);
+app.use('/api/wechat', wechatRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 健康检查
 app.get('/api/health', (req: Request, res: Response) => {
@@ -66,12 +76,14 @@ app.use((err: any, req: Request, res: Response, next: any) => {
 
 // 启动服务器
 const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0'; // 监听所有网络接口
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, HOST, () => {
   console.log('='.repeat(50));
   console.log(`🚀 服务器运行在端口 ${PORT}`);
-  console.log(`📝 API地址: http://localhost:${PORT}/api`);
-  console.log(`🔌 WebSocket地址: http://localhost:${PORT}`);
+  console.log(`📝 本地访问: http://localhost:${PORT}/api`);
+  console.log(`📱 局域网访问: http://30.138.104.69:${PORT}/api`);
+  console.log(`🔌 WebSocket地址: http://30.138.104.69:${PORT}`);
   console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
   console.log('='.repeat(50));
 });

@@ -19,7 +19,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     // 检查用户是否已存在
     const existingUser = await User.findOne({
-      $or: [{ email }, { username }],
+      where: {
+        [require('sequelize').Op.or]: [{ email }, { username }],
+      },
     });
 
     if (existingUser) {
@@ -32,25 +34,23 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     // 创建新用户
-    const user = new User({
+    const user = await User.create({
       username,
       email,
       password,
-      role: 'editor', // 默认角色
+      role: 'editor',
     });
-
-    await user.save();
 
     // 生成JWT token
-    const token = jwt.sign({ userId: user._id }, jwtConfig.secret, {
+    const token = jwt.sign({ userId: user.id }, jwtConfig.secret, {
       expiresIn: jwtConfig.expiresIn,
-    });
+    } as any);
 
     res.status(201).json({
       message: '注册成功',
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -60,8 +60,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   } catch (error: any) {
     console.error('注册错误:', error);
 
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map((err: any) => err.message);
+    if (error.name === 'SequelizeValidationError') {
+      const messages = error.errors.map((err: any) => err.message);
       res.status(400).json({ message: messages.join(', ') });
     } else {
       res.status(500).json({ message: '服务器错误' });
@@ -82,8 +82,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 查找用户（包含密码字段）
-    const user = await User.findOne({ email }).select('+password');
+    // 查找用户
+    const user = await User.findOne({ where: { email } });
 
     if (!user) {
       res.status(401).json({ message: '邮箱或密码错误' });
@@ -105,15 +105,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // 生成JWT token
-    const token = jwt.sign({ userId: user._id }, jwtConfig.secret, {
+    const token = jwt.sign({ userId: user.id }, jwtConfig.secret, {
       expiresIn: jwtConfig.expiresIn,
-    });
+    } as any);
 
     res.json({
       message: '登录成功',
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -141,7 +141,7 @@ export const getCurrentUser = async (
 
     res.json({
       user: {
-        id: req.user._id,
+        id: req.user.id,
         username: req.user.username,
         email: req.user.email,
         role: req.user.role,
@@ -169,9 +169,9 @@ export const refreshToken = async (
     }
 
     // 生成新的token
-    const token = jwt.sign({ userId: req.user._id }, jwtConfig.secret, {
+    const token = jwt.sign({ userId: req.user.id }, jwtConfig.secret, {
       expiresIn: jwtConfig.expiresIn,
-    });
+    } as any);
 
     res.json({
       message: 'Token刷新成功',

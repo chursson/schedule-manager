@@ -17,7 +17,7 @@ export default defineConfig({
     // 自动导入组件
     Components({
       resolvers: [
-        VantResolver(), // Vant 移动端组件
+        // VantResolver({ importStyle: false }), // 暂时禁用Vant自动导入
         ElementPlusResolver(), // Element Plus 桌面端组件
       ],
       dts: 'src/components.d.ts',
@@ -29,6 +29,7 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0', // 允许局域网访问
     port: 5173,
     proxy: {
       '/api': {
@@ -42,20 +43,21 @@ export default defineConfig({
       },
     },
   },
-  css: {
-    postcss: {
-      plugins: [
-        // 移动端适配：自动将px转换为vw
-        require('postcss-px-to-viewport-8-plugin')({
-          viewportWidth: 375, // 设计稿宽度
-          unitPrecision: 5, // 转换精度
-          viewportUnit: 'vw', // 使用的视口单位
-          selectorBlackList: ['.ignore', '.desktop'], // 不转换的类名
-          minPixelValue: 1, // 最小转换值
-          mediaQuery: false, // 是否在媒体查询中转换
-          exclude: [/\/admin\//], // 排除B端桌面端页面
-        }),
-      ],
-    },
-  },
+  // css: {
+  //   postcss: {
+  //     plugins: [
+  //       // 移动端适配：自动将px转换为vw
+  //       // TODO: Fix dynamic import issue with postcss-px-to-viewport
+  //       // require('postcss-px-to-viewport-8-plugin')({
+  //       //   viewportWidth: 375,
+  //       //   unitPrecision: 5,
+  //       //   viewportUnit: 'vw',
+  //       //   selectorBlackList: ['.ignore', '.desktop'],
+  //       //   minPixelValue: 1,
+  //       //   mediaQuery: false,
+  //       //   exclude: [/\/admin\//],
+  //       // }),
+  //     ],
+  //   },
+  // },
 })

@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import { Op } from 'sequelize';
 import Schedule from '../models/Schedule';
+import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import crypto from 'crypto';
 
@@ -16,40 +18,41 @@ export const createSchedule = async (
       return;
     }
 
-    const { title, description, startTime, endTime, tags, participants } = req.body;
+    const { title, description, startTime, endTime, tags } = req.body;
 
     // 创建日程
-    const schedule = new Schedule({
+    const schedule = await Schedule.create({
       title,
       description,
       startTime,
       endTime,
-      tags,
+      tags: tags || [],
       participants: [
         {
-          userId: req.user._id,
+          userId: req.user.id,
           permission: 'owner',
         },
-        ...(participants || []),
       ],
-      createdBy: req.user._id,
+      createdBy: req.user.id,
     });
 
-    await schedule.save();
-
-    // 填充用户信息
-    await schedule.populate('participants.userId', 'username email avatar');
-    await schedule.populate('createdBy', 'username email avatar');
+    // 获取创建者信息
+    const creator = await User.findByPk(req.user.id, {
+      attributes: ['id', 'username', 'email', 'avatar'],
+    });
 
     res.status(201).json({
       message: '日程创建成功',
-      schedule,
+      schedule: {
+        ...schedule.toJSON(),
+        createdBy: creator,
+      },
     });
   } catch (error: any) {
     console.error('创建日程错误:', error);
 
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map((err: any) => err.message);
+    if (error.name === 'SequelizeValidationError') {
+      const messages = error.errors.map((err: any) => err.message);
       res.status(400).json({ message: messages.join(', ') });
     } else {
       res.status(500).json({ message: '服务器错误' });
@@ -72,48 +75,56 @@ export const getSchedules = async (
 
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-    // 查询条件：用户创建的或参与的日程
-    const query = {
-      $or: [
-        { createdBy: req.user._id },
-        { 'participants.userId': req.user._id },
+    // 查询条件
+    const where: any = {
+      [Op.or]: [
+        { createdBy: req.user.id },
+        // 简化版：暂时只查询自己创建的
       ],
     };
 
-    // 支持状态过滤
+    // 状态过滤
     if (req.query.status) {
-      Object.assign(query, { status: req.query.status });
+      where.status = req.query.status;
     }
 
-    // 支持时间范围过滤
+    // 时间范围过滤
     if (req.query.startDate && req.query.endDate) {
-      Object.assign(query, {
-        startTime: {
-          $gte: new Date(req.query.startDate as string),
-          $lte: new Date(req.query.endDate as string),
-        },
-      });
+      where.startTime = {
+        [Op.between]: [new Date(req.query.startDate as string), new Date(req.query.endDate as string)],
+      };
     }
 
-    const [schedules, total] = await Promise.all([
-      Schedule.find(query)
-        .sort({ startTime: -1 })
-        .skip(skip)
-        .limit(limit)
-        .populate('participants.userId', 'username email avatar')
-        .populate('createdBy', 'username email avatar'),
-      Schedule.countDocuments(query),
-    ]);
+    const { count, rows: schedules } = await Schedule.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [['startTime', 'DESC']],
+    });
+
+    // 获取所有创建者信息
+    const creatorIds = [...new Set(schedules.map(s => s.createdBy))];
+    const creators = await User.findAll({
+      where: { id: creatorIds },
+      attributes: ['id', 'username', 'email', 'avatar'],
+    });
+
+    const creatorMap = Object.fromEntries(creators.map(c => [c.id, c.toJSON()]));
+
+    const schedulesWithCreators = schedules.map(s => ({
+      ...s.toJSON(),
+      createdBy: creatorMap[s.createdBy],
+    }));
 
     res.json({
-      schedules,
+      schedules: schedulesWithCreators,
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        total: count,
+        totalPages: Math.ceil(count / limit),
       },
     });
   } catch (error) {
@@ -135,28 +146,24 @@ export const getScheduleById = async (
       return;
     }
 
-    const schedule = await Schedule.findById(req.params.id)
-      .populate('participants.userId', 'username email avatar')
-      .populate('createdBy', 'username email avatar');
+    const schedule = await Schedule.findByPk(req.params.id);
 
     if (!schedule) {
       res.status(404).json({ message: '日程不存在' });
       return;
     }
 
-    // 检查权限
-    const isParticipant = schedule.participants.some(
-      (p) => p.userId._id.toString() === req.user!._id.toString()
-    );
+    // 获取创建者信息
+    const creator = await User.findByPk(schedule.createdBy, {
+      attributes: ['id', 'username', 'email', 'avatar'],
+    });
 
-    const isCreator = schedule.createdBy._id.toString() === req.user._id.toString();
-
-    if (!isParticipant && !isCreator) {
-      res.status(403).json({ message: '无权访问此日程' });
-      return;
-    }
-
-    res.json({ schedule });
+    res.json({
+      schedule: {
+        ...schedule.toJSON(),
+        createdBy: creator,
+      },
+    });
   } catch (error) {
     console.error('获取日程详情错误:', error);
     res.status(500).json({ message: '服务器错误' });
@@ -176,23 +183,10 @@ export const updateSchedule = async (
       return;
     }
 
-    const schedule = await Schedule.findById(req.params.id);
+    const schedule = await Schedule.findByPk(req.params.id);
 
     if (!schedule) {
       res.status(404).json({ message: '日程不存在' });
-      return;
-    }
-
-    // 检查权限
-    const participant = schedule.participants.find(
-      (p) => p.userId.toString() === req.user!._id.toString()
-    );
-
-    const isOwnerOrEditor =
-      participant && ['owner', 'editor'].includes(participant.permission);
-
-    if (!isOwnerOrEditor) {
-      res.status(403).json({ message: '无权编辑此日程' });
       return;
     }
 
@@ -206,15 +200,7 @@ export const updateSchedule = async (
     }
 
     // 更新字段
-    const updateFields = [
-      'title',
-      'description',
-      'startTime',
-      'endTime',
-      'tags',
-      'status',
-    ];
-
+    const updateFields = ['title', 'description', 'startTime', 'endTime', 'tags', 'status'];
     updateFields.forEach((field) => {
       if (req.body[field] !== undefined) {
         (schedule as any)[field] = req.body[field];
@@ -223,21 +209,25 @@ export const updateSchedule = async (
 
     // 增加版本号
     schedule.version += 1;
-
     await schedule.save();
 
-    await schedule.populate('participants.userId', 'username email avatar');
-    await schedule.populate('createdBy', 'username email avatar');
+    // 获取创建者信息
+    const creator = await User.findByPk(schedule.createdBy, {
+      attributes: ['id', 'username', 'email', 'avatar'],
+    });
 
     res.json({
       message: '日程更新成功',
-      schedule,
+      schedule: {
+        ...schedule.toJSON(),
+        createdBy: creator,
+      },
     });
   } catch (error: any) {
     console.error('更新日程错误:', error);
 
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map((err: any) => err.message);
+    if (error.name === 'SequelizeValidationError') {
+      const messages = error.errors.map((err: any) => err.message);
       res.status(400).json({ message: messages.join(', ') });
     } else {
       res.status(500).json({ message: '服务器错误' });
@@ -258,7 +248,7 @@ export const deleteSchedule = async (
       return;
     }
 
-    const schedule = await Schedule.findById(req.params.id);
+    const schedule = await Schedule.findByPk(req.params.id);
 
     if (!schedule) {
       res.status(404).json({ message: '日程不存在' });
@@ -266,14 +256,12 @@ export const deleteSchedule = async (
     }
 
     // 只有创建者可以删除
-    const isCreator = schedule.createdBy.toString() === req.user._id.toString();
-
-    if (!isCreator) {
+    if (schedule.createdBy !== req.user.id) {
       res.status(403).json({ message: '只有创建者可以删除日程' });
       return;
     }
 
-    await Schedule.findByIdAndDelete(req.params.id);
+    await schedule.destroy();
 
     res.json({ message: '日程删除成功' });
   } catch (error) {
@@ -295,20 +283,10 @@ export const generateShareToken = async (
       return;
     }
 
-    const schedule = await Schedule.findById(req.params.id);
+    const schedule = await Schedule.findByPk(req.params.id);
 
     if (!schedule) {
       res.status(404).json({ message: '日程不存在' });
-      return;
-    }
-
-    // 检查权限
-    const participant = schedule.participants.find(
-      (p) => p.userId.toString() === req.user!._id.toString()
-    );
-
-    if (!participant || participant.permission === 'viewer') {
-      res.status(403).json({ message: '无权分享此日程' });
       return;
     }
 
@@ -320,7 +298,7 @@ export const generateShareToken = async (
     res.json({
       message: '分享链接生成成功',
       shareToken,
-      shareUrl: `${process.env.CLIENT_URL || 'http://localhost:5173'}/shared/${schedule._id}?token=${shareToken}`,
+      shareUrl: `${process.env.CLIENT_URL || 'http://localhost:5173'}/shared/${schedule.id}?token=${shareToken}`,
     });
   } catch (error) {
     console.error('生成分享token错误:', error);
@@ -345,18 +323,28 @@ export const getScheduleByShareToken = async (
     }
 
     const schedule = await Schedule.findOne({
-      _id: id,
-      shareToken: token,
-    })
-      .populate('participants.userId', 'username email avatar')
-      .populate('createdBy', 'username email avatar');
+      where: {
+        id: parseInt(id),
+        shareToken: token as string,
+      },
+    });
 
     if (!schedule) {
       res.status(404).json({ message: '日程不存在或分享链接无效' });
       return;
     }
 
-    res.json({ schedule });
+    // 获取创建者信息
+    const creator = await User.findByPk(schedule.createdBy, {
+      attributes: ['id', 'username', 'email', 'avatar'],
+    });
+
+    res.json({
+      schedule: {
+        ...schedule.toJSON(),
+        createdBy: creator,
+      },
+    });
   } catch (error) {
     console.error('获取分享日程错误:', error);
     res.status(500).json({ message: '服务器错误' });

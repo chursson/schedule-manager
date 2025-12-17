@@ -7,35 +7,25 @@
 </script>
 
 <style>
-/* 全局样式重置 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body,
+/* App.vue - 应用新的配色方案 */
 #app {
-  width: 100%;
-  height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-primary);
+  min-height: 100vh;
 }
 
-/* 移动端适配 */
-@media screen and (max-width: 768px) {
-  html {
-    font-size: 14px;
-  }
+/* 页面过渡动画 */
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.3s ease;
 }
 
-/* 桌面端 */
-@media screen and (min-width: 769px) {
-  html {
-    font-size: 16px;
-  }
+.page-enter-from {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
 }
 </style>

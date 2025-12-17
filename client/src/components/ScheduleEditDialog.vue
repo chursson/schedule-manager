@@ -77,7 +77,7 @@
 
   <!-- 时间选择器 -->
   <van-popup v-model:show="showStartTimePicker" position="bottom">
-    <van-datetime-picker
+    <van-date-picker
       v-model="formStartTime"
       type="datetime"
       title="选择开始时间"
@@ -87,7 +87,7 @@
   </van-popup>
 
   <van-popup v-model:show="showEndTimePicker" position="bottom">
-    <van-datetime-picker
+    <van-date-picker
       v-model="formEndTime"
       type="datetime"
       title="选择结束时间"
@@ -174,10 +174,10 @@ const formatDateTime = (date: Date) => {
 const handleInput = () => {
   if (inputTimeout) clearTimeout(inputTimeout);
 
-  socketClient.sendUserTyping(props.schedule._id);
+  socketClient.sendUserTyping(props.schedule.id);
 
   inputTimeout = setTimeout(() => {
-    socketClient.sendUserStopTyping(props.schedule._id);
+    socketClient.sendUserStopTyping(props.schedule.id);
   }, 2000);
 };
 
@@ -212,7 +212,7 @@ const handleBeforeClose = (action: string) => {
   if (action === 'confirm') {
     return handleSubmit();
   }
-  socketClient.sendUserStopTyping(props.schedule._id);
+  socketClient.sendUserStopTyping(props.schedule.id);
   return true;
 };
 
@@ -237,11 +237,11 @@ const handleSubmit = async () => {
       version: props.schedule.version,
     };
 
-    await scheduleStore.updateSchedule(props.schedule._id, updateData);
+    await scheduleStore.updateSchedule(props.schedule.id, updateData);
 
     // 通过Socket通知其他用户
     socketClient.sendScheduleUpdate(
-      props.schedule._id,
+      props.schedule.id,
       updateData,
       props.schedule.version + 1
     );
@@ -251,7 +251,7 @@ const handleSubmit = async () => {
       type: 'success',
     });
 
-    socketClient.sendUserStopTyping(props.schedule._id);
+    socketClient.sendUserStopTyping(props.schedule.id);
     visible.value = false;
     emit('updated');
     return true;

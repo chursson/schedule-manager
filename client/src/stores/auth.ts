@@ -27,8 +27,8 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = savedToken;
       try {
         user.value = JSON.parse(savedUser);
-        // 初始化Socket连接
-        socketClient.connect(savedToken);
+        // TODO: 初始化Socket连接 - 暂时禁用
+        // socketClient.connect(savedToken);
       } catch (error) {
         console.error('解析用户信息失败:', error);
         logout();
@@ -51,8 +51,8 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
 
-      // 连接Socket
-      socketClient.connect(response.token);
+      // TODO: 连接Socket - 暂时禁用
+      // socketClient.connect(response.token);
 
       return response;
     } finally {
@@ -75,8 +75,8 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
 
-      // 连接Socket
-      socketClient.connect(response.token);
+      // TODO: 连接Socket - 暂时禁用
+      // socketClient.connect(response.token);
 
       return response;
     } finally {
@@ -88,8 +88,8 @@ export const useAuthStore = defineStore('auth', () => {
    * 登出
    */
   function logout() {
-    // 断开Socket连接
-    socketClient.disconnect();
+    // TODO: 断开Socket连接 - 暂时禁用
+    // socketClient.disconnect();
 
     // 清除状态
     user.value = null;

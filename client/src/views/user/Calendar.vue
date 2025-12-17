@@ -31,9 +31,9 @@
       <div v-else class="schedule-list">
         <schedule-card
           v-for="schedule in dailySchedules"
-          :key="schedule._id"
+          :key="schedule.id"
           :schedule="schedule"
-          @click="handleView(schedule._id)"
+          @click="handleView(schedule.id)"
         />
       </div>
     </div>

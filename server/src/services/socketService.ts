@@ -37,10 +37,10 @@ export class SocketService {
         }
 
         // 验证token
-        const decoded = jwt.verify(token, jwtConfig.secret) as { userId: string };
+        const decoded = jwt.verify(token, jwtConfig.secret) as { userId: number };
 
         // 查找用户
-        const user = await User.findById(decoded.userId);
+        const user = await User.findByPk(decoded.userId);
 
         if (!user || user.status !== 'active') {
           return next(new Error('用户不存在或已被禁用'));
@@ -48,7 +48,7 @@ export class SocketService {
 
         // 将用户信息附加到socket
         socket.data.user = {
-          id: user._id.toString(),
+          id: user.id.toString(),
           username: user.username,
           email: user.email,
         };

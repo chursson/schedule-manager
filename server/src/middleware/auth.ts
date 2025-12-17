@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { jwtConfig } from '../config/jwt';
-import User, { IUser } from '../models/User';
+import User from '../models/User';
+import type { UserAttributes } from '../models/User';
 
 // 扩展Express Request类型
 export interface AuthRequest extends Request {
-  user?: IUser;
+  user?: UserAttributes;
 }
 
 export const authenticate = async (
@@ -25,10 +26,10 @@ export const authenticate = async (
     const token = authHeader.split(' ')[1];
 
     // 验证token
-    const decoded = jwt.verify(token, jwtConfig.secret) as { userId: string };
+    const decoded = jwt.verify(token, jwtConfig.secret) as { userId: number };
 
     // 查找用户
-    const user = await User.findById(decoded.userId);
+    const user = await User.findByPk(decoded.userId);
 
     if (!user) {
       res.status(401).json({ message: '用户不存在' });
@@ -41,7 +42,7 @@ export const authenticate = async (
     }
 
     // 将用户信息添加到请求对象
-    req.user = user;
+    req.user = user.toJSON();
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {

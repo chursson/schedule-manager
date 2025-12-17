@@ -1,11 +1,15 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { DataTypes, Model, Optional } from 'sequelize';
+import { sequelize } from '../config/database';
 
+// Participant接口
 export interface IParticipant {
-  userId: mongoose.Types.ObjectId;
+  userId: number;
   permission: 'owner' | 'editor' | 'viewer';
 }
 
-export interface ISchedule extends Document {
+// Schedule属性接口
+export interface ScheduleAttributes {
+  id: number;
   title: string;
   description?: string;
   startTime: Date;
@@ -13,88 +17,119 @@ export interface ISchedule extends Document {
   participants: IParticipant[];
   tags: string[];
   status: 'pending' | 'in-progress' | 'completed';
-  version: number; // 用于冲突检测
-  shareToken?: string; // 微信分享token
-  createdBy: mongoose.Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
+  version: number;
+  shareToken?: string;
+  createdBy: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const ScheduleSchema = new Schema<ISchedule>(
+// 创建时的可选属性
+interface ScheduleCreationAttributes
+  extends Optional<ScheduleAttributes, 'id' | 'description' | 'tags' | 'status' | 'version' | 'shareToken' | 'createdAt' | 'updatedAt'> {}
+
+// Schedule模型类
+class Schedule extends Model<ScheduleAttributes, ScheduleCreationAttributes> implements ScheduleAttributes {
+  public id!: number;
+  public title!: string;
+  public description?: string;
+  public startTime!: Date;
+  public endTime!: Date;
+  public participants!: IParticipant[];
+  public tags!: string[];
+  public status!: 'pending' | 'in-progress' | 'completed';
+  public version!: number;
+  public shareToken?: string;
+  public createdBy!: number;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+// 初始化Schedule模型
+Schedule.init(
   {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     title: {
-      type: String,
-      required: [true, '日程标题不能为空'],
-      trim: true,
-      maxlength: [100, '标题最多100个字符'],
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: {
+          args: [1, 100],
+          msg: '标题长度必须在1-100个字符之间',
+        },
+      },
     },
     description: {
-      type: String,
-      trim: true,
-      maxlength: [500, '描述最多500个字符'],
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     startTime: {
-      type: Date,
-      required: [true, '开始时间不能为空'],
+      type: DataTypes.DATE,
+      allowNull: false,
     },
     endTime: {
-      type: Date,
-      required: [true, '结束时间不能为空'],
+      type: DataTypes.DATE,
+      allowNull: false,
       validate: {
-        validator: function (this: ISchedule, value: Date) {
-          return value > this.startTime;
+        isAfterStart(this: Schedule, value: Date) {
+          if (value <= this.startTime) {
+            throw new Error('结束时间必须晚于开始时间');
+          }
         },
-        message: '结束时间必须晚于开始时间',
       },
     },
-    participants: [
-      {
-        userId: {
-          type: Schema.Types.ObjectId,
-          ref: 'User',
-          required: true,
-        },
-        permission: {
-          type: String,
-          enum: ['owner', 'editor', 'viewer'],
-          default: 'viewer',
-        },
-      },
-    ],
-    tags: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+    participants: {
+      type: DataTypes.JSON,
+      allowNull: false,
+      defaultValue: [],
+    },
+    tags: {
+      type: DataTypes.JSON,
+      allowNull: false,
+      defaultValue: [],
+    },
     status: {
-      type: String,
-      enum: ['pending', 'in-progress', 'completed'],
-      default: 'pending',
+      type: DataTypes.ENUM('pending', 'in-progress', 'completed'),
+      defaultValue: 'pending',
     },
     version: {
-      type: Number,
-      default: 0,
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
     },
     shareToken: {
-      type: String,
+      type: DataTypes.STRING,
+      allowNull: true,
       unique: true,
-      sparse: true, // 允许null值，但非null值必须唯一
     },
     createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
     },
   },
   {
+    sequelize,
+    tableName: 'schedules',
     timestamps: true,
+    indexes: [
+      {
+        fields: ['createdBy'],
+      },
+      {
+        fields: ['startTime'],
+      },
+      {
+        fields: ['shareToken'],
+      },
+    ],
   }
 );
 
-// 索引优化
-ScheduleSchema.index({ createdBy: 1, startTime: -1 });
-ScheduleSchema.index({ 'participants.userId': 1 });
-ScheduleSchema.index({ shareToken: 1 });
-
-export default mongoose.model<ISchedule>('Schedule', ScheduleSchema);
+export default Schedule;

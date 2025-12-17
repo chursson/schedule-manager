@@ -107,6 +107,15 @@
       :schedule="schedule"
       @updated="handleScheduleUpdated"
     />
+
+    <!-- 分享对话框 -->
+    <share-dialog
+      v-if="schedule"
+      v-model:show="showShareDialog"
+      :schedule-id="schedule.id"
+      :schedule-title="schedule.title"
+      :schedule-desc="schedule.description"
+    />
   </div>
 </template>
 
@@ -119,6 +128,7 @@ import { useAuthStore } from '../../stores/auth';
 import { socketClient } from '../../utils/socket';
 import type { Schedule, User } from '../../types';
 import ScheduleEditDialog from '../../components/ScheduleEditDialog.vue';
+import ShareDialog from '../../components/ShareDialog.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -129,6 +139,7 @@ const scheduleId = route.params.id as string;
 const schedule = ref<Schedule | null>(null);
 const loading = ref(true);
 const showEditDialog = ref(false);
+const showShareDialog = ref(false);
 const onlineUsers = ref<string[]>([]);
 const typingUser = ref('');
 let typingTimeout: any = null;
@@ -240,20 +251,14 @@ const handleDelete = async () => {
 // 分享日程
 const handleShare = async () => {
   try {
-    const response = await scheduleStore.generateShareToken(scheduleId);
+    // 生成分享token
+    await scheduleStore.generateShareToken(scheduleId);
 
-    // 这里可以集成微信分享，暂时显示分享链接
-    showToast({
-      message: '分享链接已复制',
-      duration: 2000,
-    });
-
-    // 复制到剪贴板
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(response.shareUrl);
-    }
+    // 显示分享对话框
+    showShareDialog.value = true;
   } catch (error) {
     console.error('生成分享链接失败:', error);
+    showToast('生成分享链接失败');
   }
 };
 

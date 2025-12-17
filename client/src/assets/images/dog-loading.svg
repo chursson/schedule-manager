@@ -1,0 +1,46 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 加载中小狗 - 跑步 -->
+  <g id="loading-dog">
+    <!-- 头部 -->
+    <ellipse cx="50" cy="40" rx="22" ry="24" stroke="#4ECDC4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 左耳 -->
+    <path d="M 32 28 Q 24 20 22 30 Q 21 36 28 38" stroke="#4ECDC4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 右耳 -->
+    <path d="M 68 28 Q 76 20 78 30 Q 79 36 72 38" stroke="#4ECDC4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 左眼 -->
+    <circle cx="42" cy="38" r="2.5" fill="#2C3E50"/>
+
+    <!-- 右眼 -->
+    <circle cx="58" cy="38" r="2.5" fill="#2C3E50"/>
+
+    <!-- 鼻子 -->
+    <ellipse cx="50" cy="48" rx="3" ry="2.5" fill="#2C3E50"/>
+
+    <!-- 嘴巴（专注） -->
+    <line x1="45" y1="54" x2="55" y2="54" stroke="#4ECDC4" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- 身体 -->
+    <ellipse cx="50" cy="70" rx="18" ry="14" stroke="#4ECDC4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 尾巴（运动中） -->
+    <path d="M 68 68 Q 78 66 82 60" stroke="#4ECDC4" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 运动线条 -->
+    <line x1="75" y1="45" x2="85" y2="45" stroke="#4ECDC4" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+    <line x1="78" y1="52" x2="88" y2="52" stroke="#4ECDC4" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- 动画效果：旋转的圆圈 -->
+    <circle cx="50" cy="70" r="32" stroke="#4ECDC4" stroke-width="2" stroke-dasharray="8 8" opacity="0.3">
+      <animateTransform
+        attributeName="transform"
+        type="rotate"
+        from="0 50 70"
+        to="360 50 70"
+        dur="2s"
+        repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

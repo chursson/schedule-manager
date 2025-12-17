@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.13.2",
     "echarts": "^6.0.0",
     "element-plus": "^2.12.0",
@@ -25,6 +26,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
     "postcss-px-to-viewport-8-plugin": "^1.2.5",
+    "sass-embedded": "^1.97.0",
     "typescript": "~5.9.3",
     "unplugin-auto-import": "^20.3.0",
     "unplugin-vue-components": "^30.0.0",

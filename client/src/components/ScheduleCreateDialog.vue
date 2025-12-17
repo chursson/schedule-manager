@@ -66,7 +66,7 @@
 
   <!-- 开始时间选择器 -->
   <van-popup v-model:show="showStartTimePicker" position="bottom">
-    <van-datetime-picker
+    <van-date-picker
       v-model="form.startTime"
       type="datetime"
       title="选择开始时间"
@@ -78,7 +78,7 @@
 
   <!-- 结束时间选择器 -->
   <van-popup v-model:show="showEndTimePicker" position="bottom">
-    <van-datetime-picker
+    <van-date-picker
       v-model="form.endTime"
       type="datetime"
       title="选择结束时间"
