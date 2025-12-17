@@ -1,0 +1,34 @@
+{
+  "name": "client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "echarts": "^6.0.0",
+    "element-plus": "^2.12.0",
+    "pinia": "^3.0.4",
+    "socket.io-client": "^4.8.1",
+    "vant": "^4.9.22",
+    "vue": "^3.5.24",
+    "vue-router": "^4.6.4",
+    "weixin-js-sdk": "^1.6.5"
+  },
+  "devDependencies": {
+    "@iconify/vue": "^5.0.0",
+    "@types/node": "^24.10.1",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/tsconfig": "^0.8.1",
+    "postcss-px-to-viewport-8-plugin": "^1.2.5",
+    "typescript": "~5.9.3",
+    "unplugin-auto-import": "^20.3.0",
+    "unplugin-vue-components": "^30.0.0",
+    "vite": "^7.2.4",
+    "vue-tsc": "^3.1.4"
+  }
+}
