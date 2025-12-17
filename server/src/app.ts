@@ -75,15 +75,13 @@ app.use((err: any, req: Request, res: Response, next: any) => {
 });
 
 // 启动服务器
-const PORT = process.env.PORT || 3000;
-const HOST = '0.0.0.0'; // 监听所有网络接口
+const PORT = Number(process.env.PORT) || 3000;
 
-httpServer.listen(PORT, HOST, () => {
+httpServer.listen(PORT, '0.0.0.0', () => {
   console.log('='.repeat(50));
   console.log(`🚀 服务器运行在端口 ${PORT}`);
-  console.log(`📝 本地访问: http://localhost:${PORT}/api`);
-  console.log(`📱 局域网访问: http://30.138.104.69:${PORT}/api`);
-  console.log(`🔌 WebSocket地址: http://30.138.104.69:${PORT}`);
+  console.log(`📝 API地址: http://localhost:${PORT}/api`);
+  console.log(`🔌 WebSocket地址: http://localhost:${PORT}`);
   console.log(`🌍 环境: ${process.env.NODE_ENV || 'development'}`);
   console.log('='.repeat(50));
 });
