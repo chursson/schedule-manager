@@ -67,7 +67,7 @@
   <!-- 开始时间选择器 -->
   <van-popup v-model:show="showStartTimePicker" position="bottom">
     <van-date-picker
-      v-model="form.startTime"
+      v-model="startTimePickerValue"
       type="datetime"
       title="选择开始时间"
       :min-date="minDate"
@@ -79,7 +79,7 @@
   <!-- 结束时间选择器 -->
   <van-popup v-model:show="showEndTimePicker" position="bottom">
     <van-date-picker
-      v-model="form.endTime"
+      v-model="endTimePickerValue"
       type="datetime"
       title="选择结束时间"
       :min-date="form.startTime || minDate"
@@ -143,6 +143,32 @@ const showEndTimePicker = ref(false);
 const showTagInput = ref(false);
 const tagInput = ref('');
 
+// DatePicker需要的数组格式值
+const startTimePickerValue = ref<string[]>([]);
+const endTimePickerValue = ref<string[]>([]);
+
+// 将Date转换为DatePicker需要的数组格式
+const dateToPickerValue = (date: Date): string[] => {
+  return [
+    date.getFullYear().toString(),
+    (date.getMonth() + 1).toString().padStart(2, '0'),
+    date.getDate().toString().padStart(2, '0'),
+    date.getHours().toString().padStart(2, '0'),
+    date.getMinutes().toString().padStart(2, '0'),
+  ];
+};
+
+// 将DatePicker的数组格式转换为Date
+const pickerValueToDate = (values: string[]): Date => {
+  return new Date(
+    parseInt(values[0]),
+    parseInt(values[1]) - 1,
+    parseInt(values[2]),
+    parseInt(values[3]),
+    parseInt(values[4])
+  );
+};
+
 // 格式化时间显示
 const startTimeText = computed(() => {
   if (!form.value.startTime) return '';
@@ -171,6 +197,7 @@ const formatDateTime = (date: Date) => {
 
 // 确认开始时间
 const handleStartTimeConfirm = () => {
+  form.value.startTime = pickerValueToDate(startTimePickerValue.value);
   showStartTimePicker.value = false;
   // 如果结束时间早于开始时间，自动调整
   if (form.value.endTime <= form.value.startTime) {
@@ -180,6 +207,7 @@ const handleStartTimeConfirm = () => {
 
 // 确认结束时间
 const handleEndTimeConfirm = () => {
+  form.value.endTime = pickerValueToDate(endTimePickerValue.value);
   showEndTimePicker.value = false;
 };
 
@@ -250,6 +278,20 @@ const resetForm = () => {
 watch(visible, (val) => {
   if (val) {
     resetForm();
+  }
+});
+
+// 监听开始时间选择器打开，初始化值
+watch(showStartTimePicker, (val) => {
+  if (val) {
+    startTimePickerValue.value = dateToPickerValue(form.value.startTime);
+  }
+});
+
+// 监听结束时间选择器打开，初始化值
+watch(showEndTimePicker, (val) => {
+  if (val) {
+    endTimePickerValue.value = dateToPickerValue(form.value.endTime);
   }
 });
 </script>

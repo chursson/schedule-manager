@@ -97,7 +97,7 @@ const formatTime = (time: string | Date) => {
 
 // 删除日程
 const handleDelete = () => {
-  emit('delete', props.schedule.id);
+  emit('delete', props.schedule._id);
 };
 </script>
 
