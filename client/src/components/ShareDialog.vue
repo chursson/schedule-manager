@@ -56,7 +56,7 @@ import { isWechat, configWechatShare } from '../utils/wechat';
 
 interface Props {
   show: boolean;
-  scheduleId: number;
+  scheduleId: string;
   scheduleTitle: string;
   scheduleDesc?: string;
 }

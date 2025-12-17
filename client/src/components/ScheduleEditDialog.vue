@@ -78,7 +78,7 @@
   <!-- 时间选择器 -->
   <van-popup v-model:show="showStartTimePicker" position="bottom">
     <van-date-picker
-      v-model="formStartTime"
+      v-model="startTimePickerValue"
       type="datetime"
       title="选择开始时间"
       @confirm="handleStartTimeConfirm"
@@ -88,10 +88,9 @@
 
   <van-popup v-model:show="showEndTimePicker" position="bottom">
     <van-date-picker
-      v-model="formEndTime"
+      v-model="endTimePickerValue"
       type="datetime"
       title="选择结束时间"
-      :min-date="formStartTime"
       @confirm="handleEndTimeConfirm"
       @cancel="showEndTimePicker = false"
     />
@@ -156,6 +155,32 @@ const tagInput = ref('');
 
 let inputTimeout: any = null;
 
+// DatePicker需要的数组格式值
+const startTimePickerValue = ref<string[]>([]);
+const endTimePickerValue = ref<string[]>([]);
+
+// 将Date转换为DatePicker需要的数组格式
+const dateToPickerValue = (date: Date): string[] => {
+  return [
+    date.getFullYear().toString(),
+    (date.getMonth() + 1).toString().padStart(2, '0'),
+    date.getDate().toString().padStart(2, '0'),
+    date.getHours().toString().padStart(2, '0'),
+    date.getMinutes().toString().padStart(2, '0'),
+  ];
+};
+
+// 将DatePicker的数组格式转换为Date
+const pickerValueToDate = (values: string[]): Date => {
+  return new Date(
+    parseInt(values[0] || '0'),
+    parseInt(values[1] || '0') - 1,
+    parseInt(values[2] || '0'),
+    parseInt(values[3] || '0'),
+    parseInt(values[4] || '0')
+  );
+};
+
 // 格式化时间显示
 const startTimeText = computed(() => formatDateTime(formStartTime.value));
 const endTimeText = computed(() => formatDateTime(formEndTime.value));
@@ -174,15 +199,16 @@ const formatDateTime = (date: Date) => {
 const handleInput = () => {
   if (inputTimeout) clearTimeout(inputTimeout);
 
-  socketClient.sendUserTyping(props.schedule.id);
+  socketClient.sendUserTyping(props.schedule._id);
 
   inputTimeout = setTimeout(() => {
-    socketClient.sendUserStopTyping(props.schedule.id);
+    socketClient.sendUserStopTyping(props.schedule._id);
   }, 2000);
 };
 
 // 确认时间
 const handleStartTimeConfirm = () => {
+  formStartTime.value = pickerValueToDate(startTimePickerValue.value);
   showStartTimePicker.value = false;
   if (formEndTime.value <= formStartTime.value) {
     formEndTime.value = new Date(formStartTime.value.getTime() + 60 * 60 * 1000);
@@ -191,6 +217,7 @@ const handleStartTimeConfirm = () => {
 };
 
 const handleEndTimeConfirm = () => {
+  formEndTime.value = pickerValueToDate(endTimePickerValue.value);
   showEndTimePicker.value = false;
   handleInput();
 };
@@ -212,7 +239,7 @@ const handleBeforeClose = (action: string) => {
   if (action === 'confirm') {
     return handleSubmit();
   }
-  socketClient.sendUserStopTyping(props.schedule.id);
+  socketClient.sendUserStopTyping(props.schedule._id);
   return true;
 };
 
@@ -237,11 +264,11 @@ const handleSubmit = async () => {
       version: props.schedule.version,
     };
 
-    await scheduleStore.updateSchedule(props.schedule.id, updateData);
+    await scheduleStore.updateSchedule(props.schedule._id, updateData);
 
     // 通过Socket通知其他用户
     socketClient.sendScheduleUpdate(
-      props.schedule.id,
+      props.schedule._id,
       updateData,
       props.schedule.version + 1
     );
@@ -251,7 +278,7 @@ const handleSubmit = async () => {
       type: 'success',
     });
 
-    socketClient.sendUserStopTyping(props.schedule.id);
+    socketClient.sendUserStopTyping(props.schedule._id);
     visible.value = false;
     emit('updated');
     return true;
@@ -279,6 +306,20 @@ const initForm = () => {
   formEndTime.value = new Date(props.schedule.endTime);
   tagInput.value = props.schedule.tags?.join(', ') || '';
 };
+
+// 监听开始时间选择器打开，初始化值
+watch(showStartTimePicker, (val) => {
+  if (val) {
+    startTimePickerValue.value = dateToPickerValue(formStartTime.value);
+  }
+});
+
+// 监听结束时间选择器打开，初始化值
+watch(showEndTimePicker, (val) => {
+  if (val) {
+    endTimePickerValue.value = dateToPickerValue(formEndTime.value);
+  }
+});
 
 // 监听对话框打开
 watch(visible, (val) => {

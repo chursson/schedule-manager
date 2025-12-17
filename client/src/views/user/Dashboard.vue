@@ -133,7 +133,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { showToast, showConfirmDialog } from 'vant';
+import { showToast } from 'vant';
 import { useAuthStore } from '../../stores/auth';
 import { useScheduleStore } from '../../stores/schedule';
 import ScheduleCreateDialog from '../../components/ScheduleCreateDialog.vue';
