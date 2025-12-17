@@ -197,7 +197,7 @@ const groupedSchedules = computed(() => {
 });
 
 // 加载日程列表
-const loadSchedules = async (page: number = 1, refresh: boolean = false) => {
+const loadSchedules = async (page: number = 1, _refresh: boolean = false) => {
   try {
     const params: any = {
       page,
@@ -254,22 +254,22 @@ const handleScheduleCreated = () => {
   onRefresh();
 };
 
-// 删除日程
-const handleDelete = async (id: string) => {
-  try {
-    await showConfirmDialog({
-      title: '确认删除',
-      message: '确定要删除这个日程吗？',
-    });
+// 删除日程（暂未使用）
+// const handleDelete = async (id: string) => {
+//   try {
+//     await showConfirmDialog({
+//       title: '确认删除',
+//       message: '确定要删除这个日程吗？',
+//     });
 
-    await scheduleStore.deleteSchedule(id);
-    showToast('删除成功');
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      console.error('删除失败:', error);
-    }
-  }
-};
+//     await scheduleStore.deleteSchedule(id);
+//     showToast('删除成功');
+//   } catch (error: any) {
+//     if (error !== 'cancel') {
+//       console.error('删除失败:', error);
+//     }
+//   }
+// };
 
 // 初始化
 onMounted(() => {

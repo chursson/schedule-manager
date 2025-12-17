@@ -2,7 +2,6 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { User, LoginForm, RegisterForm } from '../types';
 import * as authApi from '../api/auth';
-import { socketClient } from '../utils/socket';
 
 export const useAuthStore = defineStore('auth', () => {
   // State

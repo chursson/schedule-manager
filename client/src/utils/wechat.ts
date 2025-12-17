@@ -58,7 +58,7 @@ export const initWechatSDK = async (): Promise<boolean> => {
     // Android每次路由变化重新签名
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const url = isIOS
-      ? window.location.href.split('#')[0]
+      ? (window.location.href.split('#')[0] || window.location.href)
       : window.location.href;
 
     const config = await getWechatConfig(url);

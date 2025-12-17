@@ -121,11 +121,11 @@ export const useScheduleStore = defineStore('schedule', () => {
   function updateScheduleLocally(id: string, updates: Partial<Schedule>) {
     const index = schedules.value.findIndex((s) => s._id === id);
     if (index !== -1) {
-      schedules.value[index] = { ...schedules.value[index], ...updates };
+      schedules.value[index] = { ...schedules.value[index], ...updates } as Schedule;
     }
 
     if (currentSchedule.value?._id === id) {
-      currentSchedule.value = { ...currentSchedule.value, ...updates };
+      currentSchedule.value = { ...currentSchedule.value, ...updates } as Schedule;
     }
   }
 

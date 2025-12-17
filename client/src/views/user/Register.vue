@@ -32,7 +32,7 @@
             placeholder="请输入用户名"
             :rules="[
               { required: true, message: '请输入用户名' },
-              { min: 3, message: '用户名至少3个字符' },
+              { validator: (val: string) => val.length >= 3, message: '用户名至少3个字符' },
             ]"
             left-icon="user-o"
           />
@@ -56,7 +56,7 @@
             placeholder="至少6位密码"
             :rules="[
               { required: true, message: '请输入密码' },
-              { min: 6, message: '密码至少6个字符' },
+              { validator: (val: string) => val.length >= 6, message: '密码至少6个字符' },
             ]"
             left-icon="lock"
           />

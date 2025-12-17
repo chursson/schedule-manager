@@ -62,7 +62,7 @@
         <van-cell title="参与者" />
         <van-cell
           v-for="participant in schedule.participants"
-          :key="participant.userId"
+          :key="getUserId(participant.userId)"
           :title="getUserName(participant.userId)"
         >
           <template #value>
@@ -112,7 +112,7 @@
     <share-dialog
       v-if="schedule"
       v-model:show="showShareDialog"
-      :schedule-id="schedule.id"
+      :schedule-id="schedule._id"
       :schedule-title="schedule.title"
       :schedule-desc="schedule.description"
     />
@@ -212,6 +212,12 @@ const formatDateTime = (time: string | Date) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+// 获取用户ID
+const getUserId = (userId: string | User): string => {
+  if (typeof userId === 'string') return userId;
+  return userId.id;
 };
 
 // 获取用户名
