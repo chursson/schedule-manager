@@ -13,12 +13,10 @@ const connectDB = async (): Promise<void> => {
     await sequelize.authenticate();
     console.log('✅ SQLite数据库连接成功');
 
-    // 同步数据库表结构（开发环境）
-    // 只在首次运行时创建表，不修改已存在的表
-    // if (process.env.NODE_ENV === 'development') {
-    //   await sequelize.sync({ alter: true });
-    //   console.log('✅ 数据库表结构已同步');
-    // }
+    // 同步数据库表结构
+    // 生产环境也需要同步以确保表存在
+    await sequelize.sync({ alter: false });
+    console.log('✅ 数据库表结构已同步');
   } catch (error) {
     console.error('❌ 数据库连接失败:', error);
     process.exit(1);
