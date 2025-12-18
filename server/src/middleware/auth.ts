@@ -7,6 +7,10 @@ import type { UserAttributes } from '../models/User';
 // 扩展Express Request类型
 export interface AuthRequest extends Request {
   user?: UserAttributes;
+  body: any;
+  query: any;
+  params: any;
+  headers: any;
 }
 
 export const authenticate = async (
