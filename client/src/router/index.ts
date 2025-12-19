@@ -3,7 +3,6 @@ import { useAuthStore } from '../stores/auth';
 
 // 直接导入组件（不使用懒加载）
 import Login from '../views/user/Login.vue';
-import Register from '../views/user/Register.vue';
 import Layout from '../views/user/Layout.vue';
 import Dashboard from '../views/user/Dashboard.vue';
 import Calendar from '../views/user/Calendar.vue';
@@ -28,13 +27,6 @@ const routes = [
     name: 'Login',
     component: Login,
     meta: { title: '登录' },
-  },
-  // 注册页面
-  {
-    path: '/register',
-    name: 'Register',
-    component: Register,
-    meta: { title: '注册' },
   },
   // C端用户页面（移动端）
   {

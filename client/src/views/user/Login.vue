@@ -1,68 +1,64 @@
 <template>
   <div class="login-page">
-    <!-- 背景装饰圆圈 -->
-    <div class="bg-circle bg-circle-1"></div>
-    <div class="bg-circle bg-circle-2"></div>
-    <div class="bg-circle bg-circle-3"></div>
-
-    <!-- 欢迎区域 -->
-    <div class="welcome-section">
-      <div class="dog-container">
-        <img src="../../assets/images/dog-happy.svg" alt="Welcome" class="welcome-dog" />
-      </div>
-      <h1 class="app-title">日程管理小助手</h1>
-      <p class="welcome-text">欢迎回来！让我们一起高效安排每一天 ✨</p>
-    </div>
-
-    <!-- 登录表单卡片 -->
+    <!-- 登录卡片 -->
     <div class="login-card">
+      <!-- App图标和标题 -->
+      <div class="app-header">
+        <div class="app-icon">
+          <img src="../../assets/images/app-logo.svg" alt="DP59 家庭行程" class="icon-img" />
+        </div>
+        <h1 class="app-title">家庭行程</h1>
+        <p class="app-subtitle">🐾 请登录以继续使用 🐾</p>
+      </div>
+
+      <!-- 登录表单 -->
       <van-form @submit="handleLogin">
-        <van-cell-group inset>
+        <div class="form-group">
+          <label class="form-label">手机号</label>
           <van-field
             v-model="form.email"
             name="email"
-            label="邮箱"
-            placeholder="请输入邮箱地址"
-            :rules="[{ required: true, message: '请输入邮箱' }]"
-            type="email"
-            autocomplete="email"
-            left-icon="envelop-o"
-          />
+            placeholder="请输入手机号"
+            type="tel"
+            autocomplete="tel"
+            :border="false"
+            class="custom-field"
+          >
+            <template #left-icon>
+              <van-icon name="phone" class="field-icon" />
+            </template>
+          </van-field>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">密码</label>
           <van-field
             v-model="form.password"
             name="password"
             type="password"
-            label="密码"
-            placeholder="请输入登录密码"
-            :rules="[{ required: true, message: '请输入密码' }]"
+            placeholder="请输入密码"
             autocomplete="current-password"
-            left-icon="lock"
-          />
-        </van-cell-group>
+            :border="false"
+            class="custom-field"
+          >
+            <template #left-icon>
+              <van-icon name="lock" class="field-icon" />
+            </template>
+          </van-field>
+        </div>
 
         <div class="login-actions">
           <van-button
-            round
             block
             type="primary"
             native-type="submit"
             :loading="loading"
             class="login-btn"
           >
-            <span v-if="!loading">立即登录</span>
+            <span v-if="!loading">登录</span>
           </van-button>
-
-          <div class="register-link">
-            还没有账号？
-            <router-link to="/register" class="link-text">立即注册</router-link>
-          </div>
         </div>
       </van-form>
-    </div>
-
-    <!-- 底部装饰 -->
-    <div class="footer-tips">
-      <p>💡 温馨提示：首次使用建议先注册账号</p>
     </div>
   </div>
 </template>
@@ -86,6 +82,33 @@ const form = reactive<LoginForm>({
 const loading = ref(false);
 
 const handleLogin = async () => {
+  // 验证表单
+  if (!form.email || !form.email.trim()) {
+    showToast({
+      message: '请输入手机号',
+      type: 'fail',
+    });
+    return;
+  }
+
+  // 验证手机号格式
+  const phoneRegex = /^1[3-9]\d{9}$/;
+  if (!phoneRegex.test(form.email.trim())) {
+    showToast({
+      message: '请输入正确的手机号',
+      type: 'fail',
+    });
+    return;
+  }
+
+  if (!form.password || !form.password.trim()) {
+    showToast({
+      message: '请输入密码',
+      type: 'fail',
+    });
+    return;
+  }
+
   loading.value = true;
   try {
     await authStore.login(form);
@@ -110,226 +133,155 @@ const handleLogin = async () => {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: var(--gradient-primary);
-  padding: 40px 20px 30px;
-  position: relative;
-  overflow: hidden;
+  background: linear-gradient(180deg, #E8EEF2 0%, #F5F7FA 100%);
+  padding: 20px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-}
-
-/* 背景装饰圆圈 */
-.bg-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  pointer-events: none;
-}
-
-.bg-circle-1 {
-  width: 200px;
-  height: 200px;
-  top: -50px;
-  right: -50px;
-  animation: float 6s ease-in-out infinite;
-}
-
-.bg-circle-2 {
-  width: 150px;
-  height: 150px;
-  bottom: 100px;
-  left: -30px;
-  animation: float 8s ease-in-out infinite reverse;
-}
-
-.bg-circle-3 {
-  width: 100px;
-  height: 100px;
-  top: 50%;
-  right: 20px;
-  animation: float 7s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-20px) scale(1.05);
-  }
-}
-
-/* 欢迎区域 */
-.welcome-section {
-  text-align: center;
-  margin-bottom: 40px;
-  position: relative;
-  z-index: 1;
-}
-
-.dog-container {
-  margin-bottom: 20px;
-  animation: bounce 2s ease-in-out infinite;
-}
-
-.welcome-dog {
-  width: 100px;
-  height: 100px;
-  filter: drop-shadow(0 4px 12px rgba(255, 107, 157, 0.2));
-}
-
-.app-title {
-  font-size: 28px;
-  font-weight: bold;
-  color: white;
-  margin-bottom: 12px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.welcome-text {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.95);
-  line-height: 1.6;
 }
 
 /* 登录卡片 */
 .login-card {
   background: white;
-  border-radius: var(--radius-xl);
-  padding: 32px 20px;
-  box-shadow: var(--shadow-lg);
-  position: relative;
-  z-index: 1;
-  animation: slide-up 0.5s ease-out;
+  border-radius: 20px;
+  padding: 60px 40px 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 480px;
 }
 
-/* 登录操作区 */
-.login-actions {
-  margin-top: 24px;
-}
-
-.login-btn {
-  height: 50px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
-  transition: all var(--transition-normal);
-}
-
-.login-btn:active {
-  transform: scale(0.98);
-}
-
-.register-link {
+/* App头部 */
+.app-header {
   text-align: center;
-  margin-top: 20px;
-  color: var(--text-secondary);
-  font-size: 14px;
+  margin-bottom: 50px;
 }
 
-.link-text {
-  color: var(--primary-color);
+.app-icon {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 24px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(78, 124, 255, 0.25);
+  overflow: hidden;
+}
+
+.icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-title {
+  font-size: 32px;
   font-weight: 600;
-  text-decoration: none;
-  margin-left: 4px;
-  transition: color var(--transition-fast);
+  color: #4E7CFF;
+  margin-bottom: 12px;
+  letter-spacing: 2px;
 }
 
-.link-text:hover {
-  color: var(--primary-dark);
+.app-subtitle {
+  font-size: 15px;
+  color: #8B95A5;
+  font-weight: 400;
 }
 
-/* 底部提示 */
-.footer-tips {
-  text-align: center;
-  margin-top: 30px;
-  position: relative;
-  z-index: 1;
+/* 表单组 */
+.form-group {
+  margin-bottom: 24px;
+  text-align: left;
 }
 
-.footer-tips p {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  padding: 10px 20px;
-  border-radius: var(--radius-full);
-  display: inline-block;
+.form-label {
+  display: block;
+  font-size: 15px;
+  color: #2C3E50;
+  margin-bottom: 8px;
+  font-weight: 500;
+  text-align: left;
+  padding-left: 2px;
 }
 
-/* Vant组件样式覆盖 */
-:deep(.van-cell-group) {
-  background: transparent;
-  margin: 0;
+/* 自定义输入框 */
+.custom-field {
+  background: #F5F7FA;
+  border-radius: 12px;
+  padding: 0 16px;
+  height: 52px;
+}
+
+.field-icon {
+  color: #B0B8C1;
+  font-size: 18px;
+  margin-right: 12px;
 }
 
 :deep(.van-cell) {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  margin-bottom: 16px;
-  padding: 16px;
-  border: 2px solid transparent;
-  transition: all var(--transition-fast);
-}
-
-:deep(.van-cell:focus-within) {
-  border-color: var(--primary-light);
-  background: white;
-  box-shadow: 0 0 0 4px rgba(255, 107, 157, 0.1);
-}
-
-:deep(.van-field__label) {
-  color: var(--text-primary);
-  font-weight: 500;
-  width: 60px;
+  background: #F5F7FA;
+  border-radius: 12px;
+  padding: 14px 16px;
+  line-height: 24px;
 }
 
 :deep(.van-field__control) {
-  color: var(--text-primary);
+  color: #2C3E50;
+  font-size: 15px;
 }
 
-:deep(.van-field__left-icon) {
-  color: var(--primary-color);
-  margin-right: 8px;
+:deep(.van-field__control::placeholder) {
+  color: #C5CDD6;
+}
+
+/* 登录按钮 */
+.login-actions {
+  margin-top: 32px;
+}
+
+.login-btn {
+  height: 52px;
+  font-size: 17px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #4E7CFF 0%, #38C7E8 100%);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(78, 124, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.login-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(78, 124, 255, 0.3);
 }
 
 :deep(.van-button--primary) {
-  background: var(--gradient-primary);
+  background: linear-gradient(90deg, #4E7CFF 0%, #38C7E8 100%);
   border: none;
 }
 
-:deep(.van-button--primary:hover) {
-  opacity: 0.9;
-}
-
 /* 响应式调整 */
-@media (max-width: 375px) {
+@media (max-width: 480px) {
+  .login-card {
+    padding: 50px 28px 32px;
+  }
+
+  .app-icon {
+    width: 88px;
+    height: 88px;
+  }
+
+  .icon-img {
+    width: 52px;
+    height: 52px;
+  }
+
   .app-title {
-    font-size: 24px;
+    font-size: 28px;
   }
 
-  .welcome-text {
+  .app-subtitle {
     font-size: 14px;
-  }
-
-  .login-card {
-    padding: 24px 16px;
-  }
-}
-
-/* 大屏幕居中限制宽度 */
-@media (min-width: 768px) {
-  .login-page {
-    align-items: center;
-  }
-
-  .welcome-section,
-  .login-card {
-    max-width: 400px;
-    width: 100%;
   }
 }
 </style>
